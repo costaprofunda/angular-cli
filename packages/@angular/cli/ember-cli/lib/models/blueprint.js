@@ -864,6 +864,7 @@ Blueprint.prototype._locals = function(options) {
       classifiedModuleName: stringUtils.classify(sanitizedModuleName),
       camelizedModuleName: stringUtils.camelize(sanitizedModuleName),
       decamelizedModuleName: stringUtils.decamelize(sanitizedModuleName),
+      upperCasedModuleName: stringUtils.decamelize(sanitizedModuleName).toUpperCase(),
       fileMap: fileMap,
       hasPathToken: this.hasPathToken,
       targetFiles: options.targetFiles,
