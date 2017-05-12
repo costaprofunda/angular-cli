@@ -1,17 +1,16 @@
 import * as chalk from 'chalk';
-import * as fs from 'fs';
 import * as path from 'path';
+import { oneLine } from 'common-tags';
 import { NodeHost } from '../../lib/ast-tools';
 import { CliConfig } from '../../models/config';
-import { getAppFromConfig } from '../../utilities/app-utils';
 import { dynamicPathParser } from '../../utilities/dynamic-path-parser';
+import { getAppFromConfig } from '../../utilities/app-utils';
 import { resolveModulePath } from '../../utilities/resolve-module-file';
 
 const Blueprint = require('../../ember-cli/lib/models/blueprint');
-const findParentModule = require('../../utilities/find-parent-module').default;
-const getFiles = Blueprint.prototype.files;
 const stringUtils = require('ember-cli-string-utils');
 const astUtils = require('../../utilities/ast-utils');
+const getFiles = Blueprint.prototype.files;
 
 export default Blueprint.extend({
   description: '',
