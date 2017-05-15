@@ -92,103 +92,100 @@ export default Blueprint.extend({
 
   afterInstall(options: any) {
     const returns: Array<any> = [];
-    const classNameActions = stringUtils.classify(`${options.entity.name}Actions`);
-    const classNameEffects = stringUtils.classify(`${options.entity.name}Effects`);
-    const classNameReducer = stringUtils.classify(`${options.entity.name}Reducer`);
-    const fileNameActions = stringUtils.dasherize(`${options.entity.name}.actions`);
-    const fileNameEffects = stringUtils.dasherize(`${options.entity.name}.effects`);
-    const fileNameReducer = stringUtils.dasherize(`${options.entity.name}.reducer`);
-    const fullGeneratePath = path.join(this.project.root, this.generatePath);
-    const moduleDir = path.parse(this.pathToModule).dir;
-    const relativeDir = path.relative(moduleDir, fullGeneratePath);
-    let importPathActions, importPathEffects, importPathReducer;
-    let pathToIndexActions, pathToIndexEffects, pathToIndexReducer;
-    if (relativeDir) {
-      importPathActions = `./${relativeDir}/actions/${fileNameActions}`;
-      importPathEffects = `./${relativeDir}/effects/${fileNameEffects}`;
-      importPathReducer = `./${relativeDir}/reducers/${fileNameReducer}`;
-      pathToIndexActions = `${moduleDir}/${relativeDir}/actions/index.ts`;
-      pathToIndexEffects = `${moduleDir}/${relativeDir}/effects/index.ts`;
-      pathToIndexReducer = `${moduleDir}/${relativeDir}/reducers/index.ts`;
-    } else {
-      importPathActions = `./actions/${fileNameActions}`;
-      importPathEffects = `./effects/${fileNameEffects}`;
-      importPathReducer = `./reducers/${fileNameReducer}`;
-      pathToIndexActions = `${moduleDir}/actions/index.ts`;
-      pathToIndexEffects = `${moduleDir}/effects/index.ts`;
-      pathToIndexReducer = `${moduleDir}/reducers/index.ts`;
-    }
-    let importPreActions, importPreEffects, importPreReducer = '\n';
-    let exportPostActions, exportPostEffects, exportPostReducer = ',\n';
-    if (!fs.existsSync(pathToIndexActions)) {
-      fs.closeSync(fs.openSync(pathToIndexActions, 'w'));
-      fs.writeFile(pathToIndexActions, '\n\nexport {\n\n};');
-      importPreActions = exportPostActions = '';
-    }
-    if (!fs.existsSync(pathToIndexEffects)) {
-      fs.closeSync(fs.openSync(pathToIndexEffects, 'w'));
-      fs.writeFile(pathToIndexEffects, '\n\nexport {\n\n};');
-      importPreEffects = exportPostEffects = '';
-    }
-    if (!fs.existsSync(pathToIndexReducer)) {
-      fs.closeSync(fs.openSync(pathToIndexReducer, 'w'));
-      fs.writeFile(pathToIndexReducer, '\n\nexport {\n\n};');
-      importPreReducer = exportPostReducer = '';
-    }
+    // const classNameActions = stringUtils.classify(`${options.entity.name}Actions`);
+    // const classNameEffects = stringUtils.classify(`${options.entity.name}Effects`);
+    // const classNameReducer = stringUtils.classify(`${options.entity.name}Reducer`);
+    // const fileNameActions = stringUtils.dasherize(`${options.entity.name}.actions`);
+    // const fileNameEffects = stringUtils.dasherize(`${options.entity.name}.effects`);
+    // const fileNameReducer = stringUtils.dasherize(`${options.entity.name}.reducer`);
+    // const fullGeneratePath = path.join(this.project.root, this.generatePath);
+    // const moduleDir = path.parse(this.pathToModule).dir;
+    // const relativeDir = path.relative(moduleDir, fullGeneratePath);
+    // let importPathActions, importPathEffects, importPathReducer;
+    // let pathToIndexActions, pathToIndexEffects, pathToIndexReducer;
+    // if (relativeDir) {
+    //   importPathActions = `./${relativeDir}/actions/${fileNameActions}`;
+    //   importPathEffects = `./${relativeDir}/effects/${fileNameEffects}`;
+    //   importPathReducer = `./${relativeDir}/reducers/${fileNameReducer}`;
+    //   pathToIndexActions = `${moduleDir}/${relativeDir}/actions/index.ts`;
+    //   pathToIndexEffects = `${moduleDir}/${relativeDir}/effects/index.ts`;
+    //   pathToIndexReducer = `${moduleDir}/${relativeDir}/reducers/index.ts`;
+    // } else {
+    //   importPathActions = `./actions/${fileNameActions}`;
+    //   importPathEffects = `./effects/${fileNameEffects}`;
+    //   importPathReducer = `./reducers/${fileNameReducer}`;
+    //   pathToIndexActions = `${moduleDir}/actions/index.ts`;
+    //   pathToIndexEffects = `${moduleDir}/effects/index.ts`;
+    //   pathToIndexReducer = `${moduleDir}/reducers/index.ts`;
+    // }
+    // let importPreActions, importPreEffects, importPreReducer = '\n';
+    // let exportPostActions, exportPostEffects, exportPostReducer = ',\n';
+    // if (!fs.existsSync(pathToIndexActions)) {
+    //   fs.closeSync(fs.openSync(pathToIndexActions, 'w'));
+    //   fs.writeFile(pathToIndexActions, '\n\nexport {\n\n};');
+    //   importPreActions = exportPostActions = '';
+    // }
+    // if (!fs.existsSync(pathToIndexEffects)) {
+    //   fs.closeSync(fs.openSync(pathToIndexEffects, 'w'));
+    //   fs.writeFile(pathToIndexEffects, '\n\nexport {\n\n};');
+    //   importPreEffects = exportPostEffects = '';
+    // }
+    // if (!fs.existsSync(pathToIndexReducer)) {
+    //   fs.closeSync(fs.openSync(pathToIndexReducer, 'w'));
+    //   fs.writeFile(pathToIndexReducer, '\n\nexport {\n\n};');
+    //   importPreReducer = exportPostReducer = '';
+    // }
 
-    const importsActions = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, pathToIndexActions);
-    const exportActions = getNodesOfKind(ts.SyntaxKind.ExportAssignment, pathToIndexActions);
-    let importActionsStr = importPreActions;
-    importActionsStr += `import { ${classNameActions} } from './${fileNameActions}';`;
-    const exportActionsStr = `    ${classNameActions}${exportPostActions}`;
+    // const importsActions = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, pathToIndexActions);
+    // const exportActions = getNodesOfKind(ts.SyntaxKind.ExportAssignment, pathToIndexActions);
+    // let importActionsStr = importPreActions;
+    // importActionsStr += `import { ${classNameActions} } from './${fileNameActions}';`;
+    // const exportActionsStr = `    ${classNameActions}${exportPostActions}`;
 
-    const importsEffects = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, pathToIndexEffects);
-    const exportEffects = getNodesOfKind(ts.SyntaxKind.ExportAssignment, pathToIndexEffects);
-    let importEffectsStr = importPreEffects;
-    importEffectsStr += `import { ${classNameEffects} } from './${fileNameEffects}';`;
-    const exportEffectsStr = `    ${classNameEffects}${exportPostEffects}`;
+    // const importsEffects = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, pathToIndexEffects);
+    // const exportEffects = getNodesOfKind(ts.SyntaxKind.ExportAssignment, pathToIndexEffects);
+    // let importEffectsStr = importPreEffects;
+    // importEffectsStr += `import { ${classNameEffects} } from './${fileNameEffects}';`;
+    // const exportEffectsStr = `    ${classNameEffects}${exportPostEffects}`;
 
-    const importsReducer = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, pathToIndexReducer);
-    const exportReducer = getNodesOfKind(ts.SyntaxKind.ExportAssignment, pathToIndexReducer);
-    let importReducerStr = importPreReducer;
-    importReducerStr += `import { ${classNameReducer} } from './${fileNameReducer}';`;
-    const exportReducerStr = `    ${classNameReducer}${exportPostReducer}`;
+    // const importsReducer = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, pathToIndexReducer);
+    // const exportReducer = getNodesOfKind(ts.SyntaxKind.ExportAssignment, pathToIndexReducer);
+    // let importReducerStr = importPreReducer;
+    // importReducerStr += `import { ${classNameReducer} } from './${fileNameReducer}';`;
+    // const exportReducerStr = `    ${classNameReducer}${exportPostReducer}`;
 
-    returns.push(
-      new MultiChange([
-        astUtils
-          .insertAfterLastOccurrence(exportActions, exportActionsStr, pathToIndexActions, 11),
-        astUtils
-          .insertAfterLastOccurrence(importsActions, importActionsStr, pathToIndexActions, 0)
-      ]).apply(NodeHost).then(() =>
-        astUtils
-        .addProviderToModule(this.pathToModule, classNameActions, importPathActions)
-        .then((change: any) => change.apply(NodeHost))).then(() => new MultiChange([
-        astUtils
-          .insertAfterLastOccurrence(exportEffects, exportEffectsStr, pathToIndexEffects, 11),
-        astUtils
-          .insertAfterLastOccurrence(importsEffects, importEffectsStr, pathToIndexEffects, 0)
-      ]).apply(NodeHost)).then(() => astUtils
-        .addDeclarationToModule(this.pathToModule, classNameEffects, importPathEffects)
-        .then((change: any) => change.apply(NodeHost)))
-    );
+    // returns.push(
+    //   new MultiChange([
+    //     astUtils
+    //       .insertAfterLastOccurrence(exportActions, exportActionsStr, pathToIndexActions, 11),
+    //     astUtils
+    //       .insertAfterLastOccurrence(importsActions, importActionsStr, pathToIndexActions, 0)
+    //   ]).apply(NodeHost).then(() =>
+    //     astUtils
+    //     .addProviderToModule(this.pathToModule, classNameActions, importPathActions)
+    //     .then((change: any) => change.apply(NodeHost))).then(() => new MultiChange([
+    //     astUtils
+    //       .insertAfterLastOccurrence(exportEffects, exportEffectsStr, pathToIndexEffects, 11),
+    //     astUtils
+    //       .insertAfterLastOccurrence(importsEffects, importEffectsStr, pathToIndexEffects, 0)
+    //   ]).apply(NodeHost)).then(() => astUtils
+    //     .addDeclarationToModule(this.pathToModule, classNameEffects, importPathEffects)
+    //     .then((change: any) => change.apply(NodeHost)))
+    // );
 
     // this._writeStatusToUI(chalk.yellow,
     //   'update',
     //   path.relative(this.project.root, this.pathToModule));
-    this._writeStatusToUI(chalk.yellow,
-      'update',
-      path.relative(this.project.root, pathToIndexActions));
 
     return Promise.all(returns);
 
-    function getNodesOfKind(kind: ts.SyntaxKind, sourceFile: string) {
-      return astUtils.findNodes(getRootNode(sourceFile), kind);
-    }
+    // function getNodesOfKind(kind: ts.SyntaxKind, sourceFile: string) {
+    //   return astUtils.findNodes(getRootNode(sourceFile), kind);
+    // }
 
-    function getRootNode(sourceFile: string) {
-      return ts.createSourceFile(sourceFile, fs.readFileSync(sourceFile).toString(),
-        ts.ScriptTarget.Latest, true);
-    }
+    // function getRootNode(sourceFile: string) {
+    //   return ts.createSourceFile(sourceFile, fs.readFileSync(sourceFile).toString(),
+    //     ts.ScriptTarget.Latest, true);
+    // }
   }
 });
