@@ -858,6 +858,7 @@ Blueprint.prototype._locals = function(options) {
     var fileMapVariables = this._generateFileMapVariables(moduleName, customLocals, options);
     var fileMap = this.generateFileMap(fileMapVariables);
     var standardLocals = {
+      moduleName: moduleName,
       dasherizedPackageName: stringUtils.dasherize(packageName),
       classifiedPackageName: stringUtils.classify(packageName),
       dasherizedModuleName: stringUtils.dasherize(moduleName),
