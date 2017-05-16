@@ -69,13 +69,14 @@ function nodesByPosition(first: ts.Node, second: ts.Node): number {
  * @param nodes insert after the last occurence of nodes
  * @param toInsert string to insert
  * @param file file to insert changes into
+ * @param shiftPos shifted position to insert 
  * @param fallbackPos position to insert if toInsert happens to be the first occurence
  * @param syntaxKind the ts.SyntaxKind of the subchildren to insert after
  * @return Change instance
  * @throw Error if toInsert is first occurence but fall back is not set
  */
 export function insertAfterLastOccurrence(nodes: ts.Node[], toInsert: string,
-    file: string, fallbackPos?: number, syntaxKind?: ts.SyntaxKind): Change {
+    file: string, shiftPos?: number, fallbackPos?: number, syntaxKind?: ts.SyntaxKind): Change {
   let lastItem = nodes.sort(nodesByPosition).pop();
   if (syntaxKind) {
     lastItem = findNodes(lastItem, syntaxKind).sort(nodesByPosition).pop();
@@ -84,6 +85,9 @@ export function insertAfterLastOccurrence(nodes: ts.Node[], toInsert: string,
     throw new Error(`tried to insert ${toInsert} as first occurence with no fallback position`);
   }
   let lastItemPosition: number = lastItem ? lastItem.end : fallbackPos;
+  if (shiftPos) {
+    lastItemPosition += shiftPos;
+  }
   return new InsertChange(file, lastItemPosition, toInsert);
 }
 
@@ -190,7 +194,8 @@ export function getDecoratorMetadata(source: ts.SourceFile, identifier: string,
 
 
 function _addSymbolToNgModuleMetadata(ngModulePath: string, metadataField: string,
-                                      symbolName: string, importPath: string) {
+                                      symbolName: string, importPath: string,
+                                      symbolNameWrapped?: string) {
   const source: ts.SourceFile = getSource(ngModulePath);
   let metadata = getDecoratorMetadata(source, 'NgModule', '@angular/core');
 
@@ -292,6 +297,10 @@ function _addSymbolToNgModuleMetadata(ngModulePath: string, metadataField: strin
         }
       }
 
+      if (symbolNameWrapped) {
+        toInsert = toInsert.replace(symbolName, symbolNameWrapped);
+      }
+
       const insert = new InsertChange(ngModulePath, position, toInsert);
       const importInsert: Change = insertImport(
         ngModulePath, symbolName.replace(/\..*$/, ''), importPath);
@@ -314,9 +323,9 @@ export function addDeclarationToModule(modulePath: string, classifiedName: strin
  * into NgModule declarations. It also imports the component.
  */
 export function addImportToModule(modulePath: string, classifiedName: string,
-                                  importPath: string): Promise<Change> {
+                                  importPath: string, classifiedNameWrapped?: string): Promise<Change> {
 
-  return _addSymbolToNgModuleMetadata(modulePath, 'imports', classifiedName, importPath);
+  return _addSymbolToNgModuleMetadata(modulePath, 'imports', classifiedName, importPath, classifiedNameWrapped);
 }
 
 /**

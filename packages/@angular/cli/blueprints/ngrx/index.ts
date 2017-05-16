@@ -95,22 +95,28 @@ export default Blueprint.extend({
     class MetaData {
       className: string;
       fileName: string;
+      stateName: string;
       importPath: string;
       pathToIndex: string;
       importStr: string;
       exportStr: string;
+      anotherExportStr: string;
       imports: any;
       exports: any;
+      anotherExports: any;
       changes: Change[];
+      indexFileJustCreated: boolean = false;
 
       constructor(
         pieceName: string, //like 'Actions', 'Effects', 'Reducer', should be capitalized
         subDirName: string, //a directory where the file's been holden, like 'actions', 'effects', 'reducers',
         moduleDir: string, //should be initialized before creating an object
         relativeDir: string //should be initialized before creating an object
+        reducer?: boolean //the object will be defined in reducer-way
         ) {
           this.className = stringUtils.classify(`${options.entity.name}${pieceName}`);
           this.fileName = stringUtils.dasherize(`${options.entity.name}.${pieceName.toLowerCase()}`);
+          this.stateName = stringUtils.classify(`${options.entity.name}State`);
           if (relativeDir) {
             this.importPath = `./${relativeDir}/${subDirName}/${this.fileName}`;
             this.pathToIndex = `${moduleDir}/${relativeDir}/${subDirName}/index.ts`;
@@ -119,18 +125,41 @@ export default Blueprint.extend({
             this.importPath = `./${subDirName}/${this.fileName}`;
             this.pathToIndex = `${moduleDir}/${subDirName}/index.ts`;
           }
-          this.importStr = `\nimport { ${this.className} } from './${this.fileName}';`;
-          this.exportStr = `,\n    ${this.className}`;
+          if (reducer) {
+            this.importStr = `\nimport { ${options.entity.name}${pieceName}, ${this.stateName} } from './${this.fileName}';`
+            this.exportStr = `,\n    ${options.entity.name}: ${this.stateName}`;
+            this.anotherExportStr = `,\n    ${options.entity.name}: ${options.entity.name}${pieceName}`;
+          }
+          else {
+            this.importStr = `\nimport { ${this.className} } from './${this.fileName}';`;
+            this.exportStr = `,\n    ${this.className}`;
+          }
           if (!fs.existsSync(this.pathToIndex)) {
-            fs.writeFileSync(this.pathToIndex, '\n\nexport {\n\n};');
-            this.importStr = `import { ${this.className} } from './${this.fileName}';`;
-            this.exportStr = `    ${this.className}`;
+            let fileContent: string = '';
+            if (reducer) {
+              fileContent += `import { ${options.entity.name}${pieceName}, ${this.stateName} } from './${this.fileName}';`;
+              fileContent += `\n\nexport interface AppState {\n    ${options.entity.name}: ${this.stateName}\n};`;
+              fileContent += `\n\nexport default compose()({\n    ${options.entity.name}: ${options.entity.name}${pieceName}\n})`  
+            }
+            else {
+              fileContent += `import { ${this.className} } from './${this.fileName}';`;
+              fileContent += `\n\nexport {\n    ${this.className}\n};`;
+            }
+            fs.writeFileSync(this.pathToIndex, fileContent);
+            this.indexFileJustCreated = true;
           }
           this.imports = getNodesOfKind(ts.SyntaxKind.ImportDeclaration, this.pathToIndex);
-          this.exports = getNodesOfKind(ts.SyntaxKind.ExportSpecifier, this.pathToIndex);
+          this.exports = getNodesOfKind(!reducer ? ts.SyntaxKind.ExportSpecifier : ts.SyntaxKind.InterfaceDeclaration, this.pathToIndex);
           this.changes = [];
-          this.changes.push(astUtils.insertAfterLastOccurrence(this.imports, this.importStr, this.pathToIndex, 0));
-          this.changes.push(astUtils.insertAfterLastOccurrence(this.exports, this.exportStr, this.pathToIndex, 11));
+          if (!this.indexFileJustCreated) {
+            this.changes.push(astUtils.insertAfterLastOccurrence(this.imports, this.importStr, this.pathToIndex));
+            this.changes.push(astUtils.insertAfterLastOccurrence(this.exports, this.exportStr, this.pathToIndex, reducer ? -2 : 0));
+            if (reducer) {
+              const indexFiledata = fs.readFileSync(this.pathToIndex);
+              this.anotherExports = getNodesOfKind(ts.SyntaxKind.ExportDeclaration, this.pathToIndex);
+              this.changes.push(astUtils.insertAfterLastOccurrence(this.anotherExports, this.anotherExportStr, this.pathToIndex, -3, indexFiledata.length));
+            }
+          }
       }
     }
 
@@ -142,30 +171,35 @@ export default Blueprint.extend({
     
     const actions = new MetaData('Actions', 'actions', moduleDir, relativeDir);
     const effects = new MetaData('Effects', 'effects', moduleDir, relativeDir);
-    const reducer = new MetaData('Reducer', 'reducers', moduleDir, relativeDir);
+    const reducer = new MetaData('Reducer', 'reducers', moduleDir, relativeDir, true);
 
     try {
       returns.push(
         new MultiChange(actions.changes).apply(NodeHost).then(() =>
         new MultiChange(effects.changes).apply(NodeHost).then(() => 
-        new MultiChange(reducer.changes).apply(NodeHost)))
-        // astUtils
-        // .addProviderToModule(this.pathToModule, actions.className, actions.importPath)
-        // .then((change: any) => change.apply(NodeHost)))
+        new MultiChange(reducer.changes).apply(NodeHost))).then(() => 
+        astUtils
+          .addProviderToModule(this.pathToModule, actions.className, actions.importPath)
+          .then((change: any) => change.apply(NodeHost))).then(() => 
+          astUtils.addImportToModule(this.pathToModule, effects.className, effects.importPath, 
+            `EffectsModule.runAfterBootstrap(${effects.className})`))
+          .then((change: any) => change.apply(NodeHost))
       );
 
-      this._writeStatusToUI(chalk.yellow, 'update', path.relative(this.project.root, actions.pathToIndex));
-      this._writeStatusToUI(chalk.yellow, 'update', path.relative(this.project.root, effects.pathToIndex));
-      this._writeStatusToUI(chalk.yellow, 'update', path.relative(this.project.root, reducer.pathToIndex));
-
-      // this._writeStatusToUI(chalk.yellow,
-      // 'update',
-      // path.relative(this.project.root, this.pathToModule));
+      this._writeStatusToUI(chalk.yellow,
+        actions.indexFileJustCreated ? 'create' : 'update',
+        path.relative(this.project.root, actions.pathToIndex));
+      this._writeStatusToUI(chalk.yellow,
+        effects.indexFileJustCreated ? 'create' : 'update', 
+        path.relative(this.project.root, effects.pathToIndex));
+      this._writeStatusToUI(chalk.yellow,
+        reducer.indexFileJustCreated ? 'create' : 'update',
+        path.relative(this.project.root, reducer.pathToIndex));
+      this._writeStatusToUI(chalk.yellow, 'update', path.relative(this.project.root, this.pathToModule));
 
     }
     catch(error) {
-      this._writeStatusToUI(chalk.red,
-      'ERR', error.message;
+      this._writeStatusToUI(chalk.red, 'ERR', error.message;
     }
 
     return Promise.all(returns);
