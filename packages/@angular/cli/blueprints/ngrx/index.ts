@@ -139,7 +139,7 @@ export default Blueprint.extend({
             if (reducer) {
               fileContent += `import { ${options.entity.name}${pieceName}, ${this.stateName} } from './${this.fileName}';`;
               fileContent += `\n\nexport interface AppState {\n    ${options.entity.name}: ${this.stateName}\n};`;
-              fileContent += `\n\nexport default compose()({\n    ${options.entity.name}: ${options.entity.name}${pieceName}\n})`  
+              fileContent += `\n\nexport default compose()({\n    ${options.entity.name}: ${options.entity.name}${pieceName}\n});`  
             }
             else {
               fileContent += `import { ${this.className} } from './${this.fileName}';`;
@@ -155,9 +155,9 @@ export default Blueprint.extend({
             this.changes.push(astUtils.insertAfterLastOccurrence(this.imports, this.importStr, this.pathToIndex));
             this.changes.push(astUtils.insertAfterLastOccurrence(this.exports, this.exportStr, this.pathToIndex, reducer ? -2 : 0));
             if (reducer) {
-              const indexFiledata = fs.readFileSync(this.pathToIndex);
-              this.anotherExports = getNodesOfKind(ts.SyntaxKind.CloseBracketToken, this.pathToIndex);
-              this.changes.push(astUtils.insertAfterLastOccurrence(this.anotherExports, this.anotherExportStr, this.pathToIndex, -3, indexFiledata.length));
+              const indexFileData = fs.readFileSync(this.pathToIndex, 'utf8').trim();
+              this.anotherExports = getNodesOfKind(ts.SyntaxKind.SemicolonToken, this.pathToIndex);
+              this.changes.push(astUtils.insertAfterLastOccurrence(this.anotherExports, this.anotherExportStr, this.pathToIndex, -4, indexFileData.length));
             }
           }
       }
