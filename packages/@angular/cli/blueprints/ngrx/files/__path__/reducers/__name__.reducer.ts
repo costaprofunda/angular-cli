@@ -7,7 +7,7 @@ const initialState: <%= classifiedModuleName %>State = [];
 
 export function <%= moduleName %>Reducer(state = initialState, action: Action): <%= classifiedModuleName %>State {
     switch (action.type) {
-        case <%= camelizedModuleName %>Actions.<%= upperCasedModuleName %>_SUCCESS: {
+        case <%= classifiedModuleName %>Actions.<%= upperCasedModuleName %>_SUCCESS: {
             console.log(<%= classifiedModuleName %>Actions.<%= upperCasedModuleName %>_SUCCESS, '<ACTION>', action.payload.data);
             return action.payload;
         }
