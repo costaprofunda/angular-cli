@@ -7,7 +7,7 @@ export class <%= classifiedModuleName %>Actions {
   static <%= upperCasedModuleName %> = '[<%= upperCasedModuleName %>] description';
   <%= camelizedModuleName %>(data): Action {
     return {
-      type: <%= classifiedModuleName %>Actions.ACTION_NAME
+      type: <%= classifiedModuleName %>Actions.<%= upperCasedModuleName %>
     };
   }
 
