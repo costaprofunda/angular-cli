@@ -157,7 +157,6 @@ export default Blueprint.extend({
             if (reducer) {
               const indexFiledata = fs.readFileSync(this.pathToIndex);
               this.anotherExports = getNodesOfKind(ts.SyntaxKind.CloseBracketToken, this.pathToIndex);
-              console.log("this.anotherExports: ", this.anotherExports);
               this.changes.push(astUtils.insertAfterLastOccurrence(this.anotherExports, this.anotherExportStr, this.pathToIndex, -3, indexFiledata.length));
             }
           }
