@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 import { <%= classifiedModuleName %>Actions } from '../actions';
 
 @Injectable()
-export class LocationListEffects {
+export class <%= classifiedModuleName %>Effects {
     constructor(
         private update$: Actions,
         private <%= camelizedModuleName %>Actions: <%= classifiedModuleName %>Actions
