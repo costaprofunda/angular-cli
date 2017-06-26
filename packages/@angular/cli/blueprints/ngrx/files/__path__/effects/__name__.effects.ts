@@ -15,11 +15,11 @@ export class <%= classifiedModuleName %>Effects {
     ) { }
 
     @Effect() <%= camelizedModuleName %>$ = this.update$
-        .ofType(<%= classifiedModuleName %>Actions.<%= upperCasedModuleName %>)
+        .ofType(<%= classifiedModuleName %>Actions.GET_<%= upperCasedModuleName %>)
         .map(action => action.payload)
         .switchMap(
-            payload => (new Observable<any>()) //here the service acts
+            payload => Observable.create() //REPLACE returning statement with async method from service
                 .map(results => this.<%= camelizedModuleName %>Actions.<%= camelizedModuleName %>Success(results))
-                .catch(error => Observable.of([]))
+                .catch(error => Observable.create()) //put error handler here
         );
 }

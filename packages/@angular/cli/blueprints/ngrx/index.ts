@@ -111,7 +111,7 @@ export default Blueprint.extend({
         pieceName: string, //like 'Actions', 'Effects', 'Reducer', should be capitalized
         subDirName: string, //a directory where the file's been holden, like 'actions', 'effects', 'reducers',
         moduleDir: string, //should be initialized before creating an object
-        relativeDir: string //should be initialized before creating an object
+        relativeDir: string, //should be initialized before creating an object
         reducer?: boolean //the object will be defined in reducer-way
         ) {
           this.className = stringUtils.classify(`${options.entity.name}${pieceName}`);
@@ -137,9 +137,14 @@ export default Blueprint.extend({
           if (!fs.existsSync(this.pathToIndex)) {
             let fileContent: string = '';
             if (reducer) {
-              fileContent += `import { ${options.entity.name}${pieceName}, ${this.stateName} } from './${this.fileName}';`;
+              fileContent += 'import \'@ngrx/core/add/operator/select\';';
+              fileContent += '\nimport {compose} from \'@ngrx/core/compose\';';
+              fileContent += '\nimport {combineReducers} from \'@ngrx/store\';';
+              fileContent += `\nimport { ${options.entity.name}${pieceName}, ${this.stateName} } from './${this.fileName}';`;
               fileContent += `\n\nexport interface AppState {\n    ${options.entity.name}: ${this.stateName}\n};`;
-              fileContent += `\n\nexport default compose()({\n    ${options.entity.name}: ${options.entity.name}${pieceName}\n});`  
+              fileContent += `\n\nconst reducers = {\n    ${options.entity.name}: ${options.entity.name}${pieceName}\n};`;
+              fileContent += '\n\nconst appReducer = compose(\n    (reducer: Function) => {\n        return function (state, action) {\n            return reducer(state, action);\n        };\n    },\n    combineReducers\n)(reducers);';
+              fileContent += '\n\nexport function reducer(state: any, action: any) {\n    return appReducer(state, action);\n}\n';
             }
             else {
               fileContent += `import { ${this.className} } from './${this.fileName}';`;
@@ -155,9 +160,8 @@ export default Blueprint.extend({
             this.changes.push(astUtils.insertAfterLastOccurrence(this.imports, this.importStr, this.pathToIndex));
             this.changes.push(astUtils.insertAfterLastOccurrence(this.exports, this.exportStr, this.pathToIndex, reducer ? -2 : 0));
             if (reducer) {
-              const indexFileData = fs.readFileSync(this.pathToIndex, 'utf8').trim();
-              this.anotherExports = getNodesOfKind(ts.SyntaxKind.SemicolonToken, this.pathToIndex);
-              this.changes.push(astUtils.insertAfterLastOccurrence(this.anotherExports, this.anotherExportStr, this.pathToIndex, -4, indexFileData.length));
+              this.anotherExports = getNodesOfKind(ts.SyntaxKind.ConstKeyword, this.pathToIndex);
+              this.changes.push(astUtils.insertAfterLastOccurrence(this.anotherExports, this.anotherExportStr, this.pathToIndex, -10));
             }
           }
       }
@@ -199,7 +203,7 @@ export default Blueprint.extend({
 
     }
     catch(error) {
-      this._writeStatusToUI(chalk.red, 'ERR', error.message;
+      this._writeStatusToUI(chalk.red, 'ERR', error.message);
     }
 
     return Promise.all(returns);
